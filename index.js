@@ -13,6 +13,16 @@ dotenv.config();
 
 const { SALT } = process.env;
 
+// Initialise DB connection
+const { Pool } = pg;
+const pgConnectionConfigs = {
+  user: 'gordon',
+  host: 'localhost',
+  database: 'wally',
+  port: 5432,
+};
+const pool = new Pool(pgConnectionConfigs);
+
 app.get('/', (req, res) => {
   console.log('hello world');
 });
@@ -47,7 +57,30 @@ app.get('/generate', (req, res) => {
 });
 
 app.get('/register', (req, res) => {
-  console.log('register');
+  res.render('register');
+});
+
+app.post('/register', (req, res) => {
+  // initialise the SHA object
+  const shaObj = new jsSHA('SHA-512', 'TEXT', { encoding: 'UTF8' });
+  const { email } = req.body;
+  const pwd = `${req.body.password}-${SALT}`;
+  shaObj.update(pwd);
+  const hashedPwd = shaObj.getHash('HEX');
+  const inputData = [email, hashedPwd, 0];
+
+  const signupQuery = 'INSERT INTO users (email, password, user_score) VALUES ($1, $2, $3) RETURNING *';
+
+  pool.query(signupQuery, inputData, (err, result) => {
+    if (err) {
+      console.log(err, err.stack);
+      res.status(503).send(result.rows);
+      return;
+    }
+
+    res.send('signup success');
+    console.table(result.rows);
+  });
 });
 
 app.get('/dashboard', (req, res) => {
