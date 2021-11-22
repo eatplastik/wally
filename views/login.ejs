@@ -1,0 +1,14 @@
+<%- include('header'); -%>
+
+    <h1>Login</h1>
+    <form action="/login" method="POST">
+      Email
+      <input type="text" name="email" />
+      Password
+      <input type="password" name="password" />
+      <input type="submit" value="Submit" />
+    </form>
+
+    <p>No account? <a href="/register">Sign up here</a></p>
+  </body>
+</html>

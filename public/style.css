@@ -1,0 +1,118 @@
+body {
+  margin: 0;
+  background-color: white;
+  color: black;
+  font-family: "IBM Plex Mono", monospace;
+}
+
+a {
+  color: black;
+}
+
+p a:hover {
+  color: white;
+  background-color: black;
+}
+
+.nav a {
+  color: aliceblue;
+}
+
+.nav a:hover {
+  color: aquamarine;
+  text-decoration-style: solid;
+}
+
+.all {
+  margin: 0;
+}
+
+.container {
+  /* border: 1px dashed darkturquoise; */
+  min-height: 70%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  padding: 5%;
+}
+
+.jeopardy-container {
+  /* min-height: 70%; */
+  margin: auto;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  padding: 5%;
+}
+
+.jeopardy-col {
+  display: flex;
+  flex-direction: column;
+  padding: 5%;
+}
+
+.jeopardy-div {
+  border: 1px solid black;
+  border-radius: 8px;
+  min-width: 100px;
+  text-align: center;
+  margin: 5%;
+  padding: 5%;
+}
+
+.jeopardy-div a:hover {
+  color: white;
+  background-color: black;
+}
+
+.listing-entry {
+  /* border: 1px dotted fuchsia; */
+  flex-direction: column;
+}
+
+.row {
+  /* border: 1px dotted lime; */
+}
+
+.col {
+  /* border: 1px dotted fuchsia; */
+}
+
+.visitor {
+  /* border: 1px dotted white; */
+  align-items: flex-end;
+  padding: 5%;
+  margin: auto;
+  align-items: center;
+}
+
+.sighting {
+  /* border: 1px dotted white; */
+  padding: 5%;
+  margin: auto;
+  align-items: center;
+}
+
+.sighting-entry {
+  /* border: 1px dotted lime; */
+  padding: 5%;
+  margin: auto;
+  align-items: center;
+}
+
+.form-container {
+  /* border: 1px dotted white; */
+  padding: 5%;
+  margin: auto;
+  align-items: center;
+}
+
+#text {
+  height: 150px;
+  padding: 5%;
+  resize: none;
+  max-width: 100%;
+  /* word-wrap: break-word;
+  word-break: break-all; */
+  /* overflow-wrap: break-word; */
+}

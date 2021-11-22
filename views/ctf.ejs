@@ -1,0 +1,12 @@
+<%- include('header'); -%>
+
+    <h1>Question</h1>
+    <p><%= data[index].ctf_qns %></p>
+    <h1>Answer</h1>
+    <form action="/jeopardy/<%= index  %>" method="POST">
+      Answer
+      <input type="text" name="answer" />
+      <input type="submit" value="Submit" />
+    </form>
+  </body>
+</html>
