@@ -30,7 +30,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/login', (req, res) => {
-  res.render('login');
+  res.render('login', { cookie: req.isUserLoggedIn });
 });
 
 app.post('/login', (req, res) => {
@@ -104,7 +104,7 @@ app.get('/generate', (req, res) => {
 });
 
 app.get('/register', (req, res) => {
-  res.render('register');
+  res.render('register', { cookie: req.isUserLoggedIn });
 });
 
 app.post('/register', (req, res) => {
@@ -130,12 +130,12 @@ app.post('/register', (req, res) => {
   });
 });
 
+// FIX THIS PLEASE RES RENDERING NOT CORRECT
 app.get('/dashboard', (req, res) => {
   if (req.isUserLoggedIn === false) {
     res.redirect('/login');
     return;
   }
-
   const loggedInUser = req.cookies.userId;
   console.log(loggedInUser);
   pool.query(`SELECT * FROM users WHERE id=${loggedInUser}`, (err, result) => {
@@ -145,7 +145,7 @@ app.get('/dashboard', (req, res) => {
 });
 
 app.get('/user', (req, res) => {
-  res.render('ranking');
+  res.render('ranking', { cookie: req.isUserLoggedIn });
 });
 
 app.get('/jeopardy', (req, res) => {
@@ -155,7 +155,7 @@ app.get('/jeopardy', (req, res) => {
   }
 
   pool.query('SELECT * FROM ctf_list', (err, result) => {
-    const list = { ctf_list: result.rows };
+    const list = { ctf_list: result.rows, cookie: req.isUserLoggedIn };
     res.render('jeopardy', list);
   });
 });
@@ -170,7 +170,7 @@ app.get('/jeopardy/:index', (req, res) => {
 
   pool.query('SELECT * FROM ctf_challenge', (err, result) => {
     const data = result.rows;
-    res.render('ctf', { data, index });
+    res.render('ctf', { data, index, cookie: req.isUserLoggedIn });
   });
 });
 

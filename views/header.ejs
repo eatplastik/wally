@@ -44,20 +44,27 @@
           id="navbarSupportedContent"
         >
           <ul class="navbar-nav">
+            <% if (cookie === true) {%>
             <li class="nav-item">
               <a class="nav-link" href="/jeopardy">Jeopardy</a>
             </li>
-
+            <% } %> <% if (cookie === true) {%>
             <li class="nav-item">
               <a class="nav-link" href="/ranking">Ranking</a>
             </li>
-
+            <% } %> <% if (cookie === true) {%>
             <li class="nav-item">
               <a class="nav-link" href="/dashboard">Dashboard</a>
             </li>
+            <% } %>
           </ul>
+          <% if (cookie === false) {%>
           <a href="/register" button class="btn btn-outline-light">Register</a>
+
           <a href="/login" button class="btn btn-outline-light">Login</a>
+          <%} else {%>
+          <a href="/logout" button class="btn btn-outline-light">Log Out</a>
+          <% } %>
         </div>
       </div>
     </nav>

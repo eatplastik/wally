@@ -1,17 +1,18 @@
 <%- include('header'); -%>
-
-<div class="jeopardy-container">
-  <% for (let j = 0; j < ctf_list.length; j+=5) { %>
-  <div class="jeopardy-col">
-    <p><%= ctf_list[j].ctf_category %></p>
-    <% for (let i = j; i < j+5; i++) { %>
-    <div class="jeopardy-div">
-      <p><a href="/jeopardy/<%= i %>"><%= ctf_list[i].ctf_points %></a></p>
+  <div class="jeopardy-container">
+    <% for (let j = 0; j < ctf_list.length; j+=5) { %>
+    <div class="jeopardy-col">
+      <div class="jeopardy-cat">
+      <p><%= ctf_list[j].ctf_category %></p>
+      </div>
+      <% for (let i = j; i < j+5; i++) { %>
+      <div class="jeopardy-div">
+        <p><a href="/jeopardy/<%= i %>"><%= ctf_list[i].ctf_points %></a></p>
+      </div>
+      <% } %>
     </div>
     <% } %>
   </div>
-  <% } %>
 
-</div>
 </body>
 </html>
