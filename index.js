@@ -131,7 +131,17 @@ app.post('/register', (req, res) => {
 });
 
 app.get('/dashboard', (req, res) => {
-  res.render('dashboard');
+  if (req.isUserLoggedIn === false) {
+    res.redirect('/login');
+    return;
+  }
+
+  const loggedInUser = req.cookies.userId;
+  console.log(loggedInUser);
+  pool.query(`SELECT * FROM users WHERE id=${loggedInUser}`, (err, result) => {
+    const userInfo = result.rows[0];
+    res.render('dashboard', userInfo);
+  });
 });
 
 app.get('/user', (req, res) => {
@@ -139,6 +149,11 @@ app.get('/user', (req, res) => {
 });
 
 app.get('/jeopardy', (req, res) => {
+  if (req.isUserLoggedIn === false) {
+    res.redirect('/login');
+    return;
+  }
+
   pool.query('SELECT * FROM ctf_list', (err, result) => {
     const list = { ctf_list: result.rows };
     res.render('jeopardy', list);
@@ -146,6 +161,11 @@ app.get('/jeopardy', (req, res) => {
 });
 
 app.get('/jeopardy/:index', (req, res) => {
+  if (req.isUserLoggedIn === false) {
+    res.redirect('/login');
+    return;
+  }
+
   const { index } = req.params;
 
   pool.query('SELECT * FROM ctf_challenge', (err, result) => {
@@ -154,76 +174,59 @@ app.get('/jeopardy/:index', (req, res) => {
   });
 });
 
+// WITH PG PROMISES ^^ without above
 app.post('/jeopardy/:index', (req, res) => {
   const { index } = req.params;
   const ctfID = Number(index) + 1;
-  // console.log(req.params);
+  console.log(req.params);
   const userAnswer = req.body.answer;
-  console.log('current ctf index', index);
-  console.log('THE ANSWER 2 LIFE: ', userAnswer);
+  const loggedInUser = req.cookies.userId;
+  // console.log('whois currently logged in: ', req.cookies.userId);
+  let ctfPoints = 0;
+  let currentUserScore = 0;
 
   // Retrieve answer key for current challenge
-  pool.query(`SELECT ctf_ans FROM ctf_challenge WHERE id=${ctfID}`, (err, result) => {
-    const answerKey = result.rows[0];
-    console.log('the correct answer is: ', answerKey.ctf_ans);
-
-    // validate answer
-    // if validated, update user
-  });
-
-  res.send('answer recorded');
-});
-
-// remove this after you're done
-app.post('/note/:id', (req, res) => {
-  // initialise shaObj
-  const { loggedInHash, userId } = req.cookies;
-  const shaObj = new jsSHA('SHA-512', 'TEXT', { encoding: 'UTF8' });
-  const unhashedCookieString = `${userId}-${SALT}`;
-  shaObj.update(unhashedCookieString);
-  const hashedCookieStr = shaObj.getHash('HEX');
-
-  const formData = [req.body.comments, userId];
-
-  const addNoteQuery = 'INSERT INTO comments (comments, user_id) VALUES ($1, $2) RETURNING *';
-
-  const whenDoneWithQuery = (err, result) => {
-    if (err) {
-      console.log('Error executing query', err.stack);
-      res.status(503).send(result.rows);
-      return;
-    }
-
-    if (hashedCookieStr !== loggedInHash) {
-      res.status(403).send('please login!');
-      return;
-    }
-
-    // res.send('Saved entry!');
-    res.redirect('back');
-  };
-
-  pool.query(addNoteQuery, formData, whenDoneWithQuery);
-});
-
-app.get('/note/:id', (request, response) => {
-  pool.query('SELECT * FROM notes; SELECT * FROM comments;', (err, result) => {
-    // console.log('return multiple queries');
-    // console.log(result[0], result[1]);
-    const data = {
-      notes: result[0].rows,
-      comments: result[1].rows,
-    };
-    const { id } = request.params;
-    // console.log('request params', request.params);
-    // console.log('what is id ', id);
-    data.index = id;
-
-    response.render('single-note', data);
-  });
+  pool
+    .query(`SELECT ctf_ans FROM ctf_challenge WHERE id=${ctfID}`)
+    .then((result) => {
+      const answerKey = result.rows[0];
+      console.log('QUERY RUNNING AWAY');
+      // validate answer; only exact answers
+      if (userAnswer !== answerKey.ctf_ans) {
+        res.redirect('back');
+        return;
+      }
+      if (userAnswer === answerKey.ctf_ans) {
+        res.redirect('/jeopardy');
+      }
+      // when answer is validated, update current user's completed challenges
+      return pool.query(`UPDATE user_completed SET complete = true WHERE user_id=${loggedInUser} AND ctf_id=${ctfID}`);
+    })
+    .then((result) => pool.query(`SELECT * FROM ctf_list WHERE id=${ctfID}`))
+    .then((result) => {
+      // retrieve points of current ctf challenge
+      ctfPoints = result.rows[0].ctf_points;
+      // retrieve user current score
+      return pool.query(`SELECT * FROM users WHERE id=${loggedInUser}`);
+    })
+    .then((result) => {
+      currentUserScore = result.rows[0].user_score;
+      currentUserScore += ctfPoints;
+      // update user score in users table
+      return pool.query(`UPDATE users SET user_score = ${currentUserScore} WHERE id=${loggedInUser}`);
+    })
+    .then((result) => {
+      console.log('this is complete');
+    })
+    .catch((err) => console.log(err.stack));
 });
 
 app.get('/ranking', (req, res) => {
+  if (req.isUserLoggedIn === false) {
+    res.redirect('/login');
+    return;
+  }
+
   res.render('ranking');
 });
 

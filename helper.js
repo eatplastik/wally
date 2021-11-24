@@ -1,8 +1,10 @@
+import { request } from 'express';
+
 const checkLogin = (req, res, next) => {
-  console.log('req.cookies:', req.cookies);
+  // console.log('req.cookies:', req.cookies);
   req.isUserLoggedIn = false;
 
-  if (req.cookies.loggedInHash) {
+  if (req.cookies.loggedInHash && req.cookies.userId) {
     req.isUserLoggedIn = true;
   }
 
