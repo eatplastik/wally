@@ -92,7 +92,7 @@ a:hover {
 
 .jeopardy-div:hover a {
   color: white;
-  background-color: black;
+  /* background-color: black; */
 }
 
 .greyed-out {

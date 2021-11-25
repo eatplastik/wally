@@ -26,7 +26,7 @@ const pgConnectionConfigs = {
 const pool = new Pool(pgConnectionConfigs);
 
 app.get('/', (req, res) => {
-  res.render('index');
+  res.render('index', { cookie: req.isUserLoggedIn });
 });
 
 app.get('/login', (req, res) => {
@@ -130,7 +130,6 @@ app.post('/register', (req, res) => {
   });
 });
 
-// FIX THIS PLEASE RES RENDERING NOT CORRECT
 app.get('/dashboard', (req, res) => {
   if (req.isUserLoggedIn === false) {
     res.redirect('/login');
@@ -139,8 +138,13 @@ app.get('/dashboard', (req, res) => {
   const loggedInUser = req.cookies.userId;
   console.log(loggedInUser);
   pool.query(`SELECT * FROM users WHERE id=${loggedInUser}`, (err, result) => {
-    const userInfo = result.rows[0];
-    res.render('dashboard', userInfo);
+    const {
+      id, email, username, user_score,
+    } = result.rows[0];
+    console.log(email);
+    res.render('dashboard', {
+      user: id, email, username, user_score, cookie: req.isUserLoggedIn,
+    });
   });
 });
 
@@ -174,7 +178,6 @@ app.get('/jeopardy/:index', (req, res) => {
   });
 });
 
-// WITH PG PROMISES ^^ without above
 app.post('/jeopardy/:index', (req, res) => {
   const { index } = req.params;
   const ctfID = Number(index) + 1;
