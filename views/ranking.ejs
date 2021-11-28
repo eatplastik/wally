@@ -1,4 +1,15 @@
 <%- include('header'); -%>
-
+<div class="container">
+  <h1>Global Rankings</h1>
+    <table>
+      <% for (let i = 0; i < leaderboard.length; i++) {%>
+      <tr>
+        <td> <%= i+1 %> </td>
+        <td><%= leaderboard[i].username %></td>
+        <td><%= leaderboard[i].user_score %></td>
+      </tr>
+      <% } %>
+    </table>
+  </div>
 </body>
 </html>

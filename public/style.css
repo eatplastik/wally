@@ -11,7 +11,7 @@ a {
 
 a:hover {
   color: white;
-  background-color: black;
+  background-color: black !important;
 }
 
 .navbar {

@@ -99,6 +99,13 @@ app.get('/invite', (req, res) => {
 // user to call http request to generate invite code
 app.get('/generate', (req, res) => {
   // sql query to add invite code into db
+  const { inviteCode } = generateInvite(6);
+  res.send({ inviteCode });
+});
+
+app.post('/generate', (req, res) => {
+  console.log(req.headers['user-agent']);
+  // sql query to add invite code into db
   const inviteCode = generateInvite(6);
   res.send(inviteCode);
 });
@@ -110,24 +117,32 @@ app.get('/register', (req, res) => {
 app.post('/register', (req, res) => {
   // initialise the SHA object
   const shaObj = new jsSHA('SHA-512', 'TEXT', { encoding: 'UTF8' });
-  const { email } = req.body;
+  const { email, username } = req.body;
   const pwd = `${req.body.password}-${SALT}`;
   shaObj.update(pwd);
   const hashedPwd = shaObj.getHash('HEX');
-  const inputData = [email, hashedPwd, 0];
+  const inputData = [email, hashedPwd, username, 0];
 
-  const signupQuery = 'INSERT INTO users (email, password, user_score) VALUES ($1, $2, $3) RETURNING *';
+  const signupQuery = 'INSERT INTO users (email, password, username, user_score) VALUES ($1, $2, $3, $4) RETURNING *';
 
-  pool.query(signupQuery, inputData, (err, result) => {
-    if (err) {
-      console.log(err, err.stack);
-      res.status(503).send(result.rows);
-      return;
-    }
+  pool
+    .query(signupQuery, inputData)
+    .then((result) => {
+      res.redirect('/login');
+      // query db for user just added
+      console.log('what is user email ', email);
+      return pool.query(`SELECT id FROM users WHERE email='${email}'`);
+    })
+    .then((result) => {
+      const currentID = result.rows[0].id;
 
-    res.send('signup success');
-    console.table(result.rows);
-  });
+      // add new entries to to completed_ctf
+      return pool.query(`INSERT INTO user_completed (user_id, ctf_id, complete) VALUES (${currentID}, 1, false),(${currentID}, 2, false),(${currentID}, 3, false),(${currentID}, 4, false),(${currentID}, 5, false),(${currentID}, 6, false),(${currentID}, 7, false),(${currentID}, 8, false),(${currentID}, 9, false),(${currentID}, 10, false),(${currentID}, 11, false),(${currentID}, 12, false),(${currentID}, 13, false),(${currentID}, 14, false),(${currentID}, 15, false),(${currentID}, 16, false),(${currentID}, 17, false),(${currentID}, 18, false),(${currentID}, 19, false),(${currentID}, 20, false),(${currentID}, 21, false),(${currentID}, 22, false),(${currentID}, 23, false),(${currentID}, 24, false),(${currentID}, 25, false),(${currentID}, 26, false),(${currentID}, 27, false),(${currentID}, 28, false),(${currentID}, 29, false),(${currentID}, 30, false)`);
+    })
+    .then((result) => {
+      console.log('new entries added to user_completed');
+    })
+    .catch((err) => console.log(err.stack));
 });
 
 app.get('/dashboard', (req, res) => {
@@ -135,8 +150,9 @@ app.get('/dashboard', (req, res) => {
     res.redirect('/login');
     return;
   }
+
   const loggedInUser = req.cookies.userId;
-  console.log(loggedInUser);
+  // Retrieve data of logged in user
   pool.query(`SELECT * FROM users WHERE id=${loggedInUser}`, (err, result) => {
     const {
       id, email, username, user_score,
@@ -146,10 +162,6 @@ app.get('/dashboard', (req, res) => {
       user: id, email, username, user_score, cookie: req.isUserLoggedIn,
     });
   });
-});
-
-app.get('/user', (req, res) => {
-  res.render('ranking', { cookie: req.isUserLoggedIn });
 });
 
 app.get('/jeopardy', (req, res) => {
@@ -193,7 +205,6 @@ app.post('/jeopardy/:index', (req, res) => {
     .query(`SELECT ctf_ans FROM ctf_challenge WHERE id=${ctfID}`)
     .then((result) => {
       const answerKey = result.rows[0];
-      console.log('QUERY RUNNING AWAY');
       // validate answer; only exact answers
       if (userAnswer !== answerKey.ctf_ans) {
         res.redirect('back');
@@ -219,7 +230,7 @@ app.post('/jeopardy/:index', (req, res) => {
       return pool.query(`UPDATE users SET user_score = ${currentUserScore} WHERE id=${loggedInUser}`);
     })
     .then((result) => {
-      console.log('this is complete');
+      console.log('DFIU');
     })
     .catch((err) => console.log(err.stack));
 });
@@ -230,7 +241,37 @@ app.get('/ranking', (req, res) => {
     return;
   }
 
-  res.render('ranking');
+  pool.query('SELECT username, user_score FROM users ORDER BY user_score DESC', (err, result) => {
+    const leaderboard = result.rows;
+    console.log(leaderboard);
+
+    res.render('ranking', { leaderboard, cookie: req.isUserLoggedIn });
+  });
+});
+
+app.get('/erase-me', (req, res) => {
+  let delCounter = 1;
+  const loggedInUser = req.cookies.userId;
+
+  if (req.cookies.leave) {
+    console.log(req.cookies);
+    delCounter = Number(req.cookies.leave) + 1;
+  }
+
+  // shows up in response header, stored in browser
+  res.cookie('leave', delCounter);
+
+  if (delCounter >= 5) {
+    // delete user account and associated data
+    pool.query(`DELETE FROM users WHERE id=${loggedInUser}; DELETE FROM user_completed WHERE user_id=${loggedInUser}`, (err, result) => {
+      res.clearCookie('leave', { path: '/' });
+      res.clearCookie('userId', { path: '/' });
+      res.clearCookie('loggedInHash', { path: '/' });
+      res.redirect('/');
+    });
+  } else {
+    res.render('erase-me', { cookie: req.isUserLoggedIn, exit: req.cookies.leave });
+  }
 });
 
 app.listen(3004);

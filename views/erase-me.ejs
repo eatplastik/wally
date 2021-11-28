@@ -1,0 +1,17 @@
+<%- include('header'); -%>
+<div class="container">
+
+    <% if (exit === '1'){%>
+      <h1>ARE YOU REALLY SURE YOU WANT TO DELETE YOUR ACCOUNT?</h1>
+    <% } else if (exit === '2') {%>
+      <h1>HAVE YOU FULLY CONSIDERED THE CONSEQUENCES OF DELETING YOUR ACCOUNT?</h1>
+      <% } else if (exit === '3') {%>
+      <h1>OKAY FINE. WE CONCEDE. GOODBYE AND HAVE A NICE LIFE.</h1>
+      <% } else {%>
+      <h1>ARE YOU SURE YOU WANT TO DELETE YOUR ACCOUNT?</h1>
+      <% } %>
+
+    <a href="/erase-me" button class="btn btn-outline-dark">YES</a>
+  </div>
+</body>
+</html>
