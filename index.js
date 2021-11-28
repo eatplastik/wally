@@ -2,6 +2,7 @@ import express from 'express';
 import pg from 'pg';
 import cookieParser from 'cookie-parser';
 import jsSHA from 'jssha';
+import base64 from 'base-64';
 import dotenv from 'dotenv';
 import { checkLogin, generateInvite } from './helper.js';
 
@@ -11,9 +12,12 @@ app.use('/public', express.static('public'));
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(checkLogin);
-dotenv.config();
 
+dotenv.config();
 const { SALT, SALTY } = process.env;
+
+// const base64 = require('base-64');
+// const utf8 = require('utf8');
 
 // Initialise DB connection
 const { Pool } = pg;
@@ -93,21 +97,27 @@ app.get('/logout', (req, res) => {
 });
 
 app.get('/invite', (req, res) => {
-  console.log('hello world');
+  console.info('hello world');
+  console.info('does it work');
+  res.render('invite', { cookie: req.isUserLoggedIn });
 });
 
 // user to call http request to generate invite code
 app.get('/generate', (req, res) => {
-  // sql query to add invite code into db
-  const { inviteCode } = generateInvite(6);
-  res.send({ inviteCode });
+  res.send('lol nice try');
 });
 
 app.post('/generate', (req, res) => {
   console.log(req.headers['user-agent']);
   // sql query to add invite code into db
-  const inviteCode = generateInvite(6);
-  res.send(inviteCode);
+  const inviteCode = generateInvite(16);
+  console.log('og invite code', inviteCode);
+
+  const text = inviteCode;
+  const encoded = base64.encode(text);
+  console.log('base64 encoded invite code', encoded);
+
+  res.send({ encoded });
 });
 
 app.get('/register', (req, res) => {
