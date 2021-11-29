@@ -1,13 +1,16 @@
 <%- include('header'); -%>
-<div class="container">
+<div class="container text-center">
     <h1>Question</h1>
     <p><%= data[index].ctf_qns %></p>
-    <h1>Answer</h1>
+    <br>  
+<hr>    
+<br>
+<h1>Answer</h1><br>
     <form action="/jeopardy/<%= index  %>" method="POST">
-      Answer
       <input type="text" name="answer" />
       <input type="submit" value="Submit" />
     </form>
+    <br>
     <a href="/jeopardy">Back</a>
     </div>
   </body>

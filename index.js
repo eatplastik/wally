@@ -97,14 +97,38 @@ app.get('/logout', (req, res) => {
 });
 
 app.get('/invite', (req, res) => {
-  console.info('hello world');
-  console.info('does it work');
   res.render('invite', { cookie: req.isUserLoggedIn });
+});
+
+app.post('/invite', (req, res) => {
+  const userEnteredCode = req.body.invite;
+
+  pool
+    .query(`SELECT * from invites WHERE invite_code='${userEnteredCode}'`)
+    .then((result) => {
+      // check that invite code exists or expired
+      if (result.rows.length === 0 || result.rows[0].expired === true) {
+        res.send('soz we did not find that code or it has expired');
+        res.redirect('back');
+        return 'skip';
+      }
+      console.log('user entered a valid invite code');
+
+      // update invite code expired value to true
+      return pool.query(`UPDATE invites SET expired = true WHERE invite_code='${userEnteredCode}'`);
+    })
+    .then((result) => {
+      if (result === 'skip') {
+        return;
+      }
+      res.redirect('/register');
+    })
+    .catch((err) => console.log(err.stack));
 });
 
 // user to call http request to generate invite code
 app.get('/generate', (req, res) => {
-  res.send('lol nice try');
+  res.render('generate', { cookie: req.isUserLoggedIn });
 });
 
 app.post('/generate', (req, res) => {
@@ -112,12 +136,15 @@ app.post('/generate', (req, res) => {
   // sql query to add invite code into db
   const inviteCode = generateInvite(16);
   console.log('og invite code', inviteCode);
-
   const text = inviteCode;
   const encoded = base64.encode(text);
   console.log('base64 encoded invite code', encoded);
 
-  res.send({ encoded });
+  pool.query(`INSERT INTO invites (invite_code, expired) VALUES ('${inviteCode}', false)`, (err, result) => {
+    console.log('invite code saved');
+
+    res.send({ encoded });
+  });
 });
 
 app.get('/register', (req, res) => {
@@ -163,13 +190,20 @@ app.get('/dashboard', (req, res) => {
 
   const loggedInUser = req.cookies.userId;
   // Retrieve data of logged in user
-  pool.query(`SELECT * FROM users WHERE id=${loggedInUser}`, (err, result) => {
-    const {
-      id, email, username, user_score,
-    } = result.rows[0];
-    console.log(email);
+  // pool.query(`SELECT * FROM users WHERE id=${loggedInUser}`, (err, result) => {
+  pool.query(`SELECT username, user_score, ctf_id, complete FROM users, user_completed WHERE users.id = user_id AND users.id=${loggedInUser} AND user_id=${loggedInUser}`, (err, result) => {
+    const userData = result.rows;
+    const { username, user_score } = result.rows[0];
+
+    let completed = 0;
+    userData.forEach((el) => { if (el.complete === true) {
+      completed++;
+    } });
+
+    console.log(completed);
+
     res.render('dashboard', {
-      user: id, email, username, user_score, cookie: req.isUserLoggedIn,
+      username, user_score, complete: completed, cookie: req.isUserLoggedIn,
     });
   });
 });

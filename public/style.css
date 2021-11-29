@@ -37,6 +37,30 @@ a:hover {
   padding: 5%;
 }
 
+.index {
+  overflow: hidden;
+  overflow-y: hidden; /* Hide vertical scrollbar */
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+.container-bg {
+  background-image: url("/public/images/wheres.jpeg");
+  background-size: cover;
+  background-repeat: repeat;
+  -webkit-filter: grayscale(100%);
+  filter: grayscale(100%);
+  background-color: black;
+  min-width: 100%;
+  min-height: 200%;
+  max-width: 100%;
+  max-height: 100%;
+  text-align: center;
+  overflow: hidden;
+}
+
 .jeopardy-container {
   margin: 0;
   display: flex;
