@@ -108,12 +108,10 @@ app.post('/invite', (req, res) => {
     .then((result) => {
       // check that invite code exists or expired
       if (result.rows.length === 0 || result.rows[0].expired === true) {
-        res.send('soz we did not find that code or it has expired');
+        res.send('soz the code you entered does not exist or has expired');
         res.redirect('back');
         return 'skip';
       }
-      console.log('user entered a valid invite code');
-
       // update invite code expired value to true
       return pool.query(`UPDATE invites SET expired = true WHERE invite_code='${userEnteredCode}'`);
     })
@@ -214,6 +212,9 @@ app.get('/jeopardy', (req, res) => {
     return;
   }
 
+  const loggedInUser = req.cookies.userId;
+
+  // pool.query('SELECT * FROM ctf_list', (err, result) => {
   pool.query('SELECT * FROM ctf_list', (err, result) => {
     const list = { ctf_list: result.rows, cookie: req.isUserLoggedIn };
     res.render('jeopardy', list);
