@@ -1,0 +1,12 @@
+Code Review Comments from Michelle and Mike
+
+Good points:
+- cool readme.md
+- invite code generation was very innovative.
+- css and look and feel was consistent and appropriate to the website theme
+- code is clear and straight forward
+
+
+Points to improve
+- routes could have been separated in a routes.js
+- add comments around the main route handler functions.
